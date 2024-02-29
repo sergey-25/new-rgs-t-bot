@@ -7,8 +7,9 @@ const socketPort = process.env.SOSCKET_PORT
 const bot = new TelegramBot(token, {
     polling: true,
   });
+  const wss = new WebSocket('ws://new-rgs-bot-4b6cc3eb4578.herokuapp.com');
 
-  const wss = new WebSocket.Server({ port: socketPort });
+  // const wss = new WebSocket.Server({ port: socketPort });
 
   wss.on('connection', (ws) => {
     console.log('Client connected');
