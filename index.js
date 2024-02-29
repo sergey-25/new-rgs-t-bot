@@ -39,5 +39,5 @@ app.listen(port, () => {
 });
 
 
-const webhookUrl = 'https://rgs-telegram-bot-b27a5d9c9991.herokuapp.com/webhook'; // Update with your deployed bot's URL
+const webhookUrl = 'https://new-rgs-bot-4b6cc3eb4578.herokuapp.com/webhook'; // Update with your deployed bot's URL
 bot.setWebHook(`${webhookUrl}/bot${token}`);
