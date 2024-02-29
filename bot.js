@@ -349,7 +349,7 @@ const bot = new TelegramBot(token, {
             // Add any other headers as needed
           };
         const response = await axios.post(
-          "http://localhost:5050/api/training-requests",
+          "https://new-rgs-bot-4b6cc3eb4578.herokuapp.com/api/training-requests",
           document, { headers }
         );
         await sendNotification(response.data);
