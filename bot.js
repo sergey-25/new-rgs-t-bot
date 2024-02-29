@@ -14,7 +14,8 @@ const server = http.createServer();
 const wss = new WebSocket.Server({ server });
 
 wss.on("connection", (ws) => {
-  console.log("Client connected");
+  const host = req.headers.host; // Extract the host from the request
+  console.log('WebSocket connection established with client:', host);
 
   ws.on("message", (message) => {
     console.log(`Received message: ${message}`);
