@@ -346,7 +346,6 @@ async function insertDocument(msg, document) {
     };
     const response = await axios.post(
       "https://new-rgs-bot-d96c37c57fe5.herokuapp.com/api/training-requests",
-      // "http://localhost:5050/api/training-requests",
       document,
       { headers }
     );
