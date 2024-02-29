@@ -345,7 +345,7 @@ async function insertDocument(msg, document) {
       // Add any other headers as needed
     };
     const response = await axios.post(
-      "https://new-rgs-bot-4b6cc3eb4578.herokuapp.com/api/training-requests",
+      "https://new-rgs-bot-d96c37c57fe5.herokuapp.com/api/training-requests",
       // "http://localhost:5050/api/training-requests",
       document,
       { headers }
