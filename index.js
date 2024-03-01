@@ -4,6 +4,9 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const http = require("http");
+const { Server } = require("socket.io");
+
 const trainingRequestRoutes = require("./routes/trainingRequestRoutes.js");
 
 dotenv.config();
@@ -30,7 +33,27 @@ const db = mongoose.connection;
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
 db.once("open", () => console.log("Connected to MongoDB"));
 
-const bot = require("./bot.js");
+
+const server = http.createServer(app); // Create HTTP server
+
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept"],
+  },
+});
+io.on("connection", (socket) => {
+  console.log("Client connected");
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected");
+  });
+});
+
+
+const bot = require("./bot.js")(io);
+
 app.use("/api", trainingRequestRoutes);
 
 // Handle webhook events
@@ -40,10 +63,12 @@ app.post("/webhook", (req, res) => {
 });
 
 const port = process.env.PORT || 5000;
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server is listening on port ${port}`);
 });
 
 
 const webhookUrl = 'https://new-rgs-bot-d96c37c57fe5.herokuapp.com/webhook'; // Update with your deployed bot's URL
 bot.setWebHook(`${webhookUrl}/bot${token}`);
+
+module.exports = { app, io }; 
