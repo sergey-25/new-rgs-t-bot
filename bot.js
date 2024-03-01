@@ -426,9 +426,6 @@ module.exports = function (io) {
       bot.sendMessage(
         chatId,
         "Будь-ласка, вкажіть як до Вас звертатися (ПІБ):",
-        {
-          reply_markup: null, // or simply omit this parameter
-        }
       );
 
       const recipientResponse = await waitForReply(chatId);
@@ -436,10 +433,7 @@ module.exports = function (io) {
 
       bot.sendMessage(
         chatId,
-        "Будь-ласка, вкажіть ваш контактий номер телефону:",
-        {
-          reply_markup: null, // or simply omit this parameter
-        }
+        "Будь-ласка, вкажіть ваш контактий номер телефону:"
       );
 
       const recipientPhoneResponse = await waitForReply(chatId);
@@ -447,19 +441,13 @@ module.exports = function (io) {
 
       bot.sendMessage(
         chatId,
-        "Будь-ласка, вкажіть адресу електронної пошти телефону:",
-        {
-          reply_markup: null, // or simply omit this parameter
-        }
+        "Будь-ласка, вкажіть адресу електронної пошти телефону:"
       );
 
       const recipientEmailResponse = await waitForReply(chatId);
       const recipientEmail = recipientEmailResponse.text;
 
-      bot.sendMessage(chatId, "Будь-ласка, детально опишіть проблему:",
-      {
-        reply_markup: null, // or simply omit this parameter
-      });
+      bot.sendMessage(chatId, "Будь-ласка, детально опишіть проблему:");
 
       const recipientProblemResponse = await waitForReply(chatId);
       const recipientProblem = recipientProblemResponse.text;
@@ -516,7 +504,7 @@ module.exports = function (io) {
           break;
         case "🆘 Запит технічної допомоги":
           await bot.sendChatAction(msg.chat.id, "typing", {
-            reply_markup: null, // or simply omit this parameter
+            reply_markup: { remove_keyboard: true },
           });
 
           
