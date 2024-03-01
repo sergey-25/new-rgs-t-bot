@@ -266,12 +266,6 @@ module.exports = function (io) {
       ];
 
       const timeOptionsMarkup = timeOptions.map((row) => {
-        //   return row.map((timeOption) => {
-        //     return {
-        //       text: timeOption,
-        //       callback_data: `select_time_${dateResponse.text}_${timeOption}`,
-        //     };
-        //   });
         return row.map((timeOption) => {
           if (timeOption === "Ваш варіант") {
             return {
@@ -315,11 +309,8 @@ module.exports = function (io) {
         participants: presentResponse.text,
       };
       console.log(trainingRequest);
-      // Insert the document into MongoDB
 
       await insertDocument(msg, trainingRequest);
-
-      // Here you can continue with other questions if needed
     } else {
       // Handling for subsequent menu calls
     }
@@ -329,8 +320,7 @@ module.exports = function (io) {
     await bot.sendChatAction(msg.chat.id, "typing");
     try {
       const headers = {
-        "Content-Type": "application/json", // Set the content type to JSON
-        // Add any other headers as needed
+        "Content-Type": "application/json",
       };
       const response = await axios.post(
         "https://new-rgs-bot-e6e357c7268f.herokuapp.com/api/training-requests",
@@ -417,7 +407,10 @@ module.exports = function (io) {
     if (isFirstMenuCall) {
       bot.sendMessage(
         chatId,
-        "Будь-ласка, вкажіть назву закладу або ЄДРПОУ закладу:"
+        "Будь-ласка, вкажіть назву закладу або ЄДРПОУ закладу:",
+        {
+          force_reply: true,
+        }
       );
 
       const hospitalResponse = await waitForReply(chatId);
@@ -426,6 +419,9 @@ module.exports = function (io) {
       bot.sendMessage(
         chatId,
         "Будь-ласка, вкажіть як до Вас звертатися (ПІБ):",
+        {
+          force_reply: true,
+        }
       );
 
       const recipientResponse = await waitForReply(chatId);
@@ -433,7 +429,10 @@ module.exports = function (io) {
 
       bot.sendMessage(
         chatId,
-        "Будь-ласка, вкажіть ваш контактий номер телефону:"
+        "Будь-ласка, вкажіть ваш контактий номер телефону:",
+        {
+          force_reply: true,
+        }
       );
 
       const recipientPhoneResponse = await waitForReply(chatId);
@@ -441,13 +440,19 @@ module.exports = function (io) {
 
       bot.sendMessage(
         chatId,
-        "Будь-ласка, вкажіть адресу електронної пошти телефону:"
+        "Будь-ласка, вкажіть адресу електронної пошти телефону:",
+        {
+          force_reply: true,
+        }
       );
 
       const recipientEmailResponse = await waitForReply(chatId);
       const recipientEmail = recipientEmailResponse.text;
 
-      bot.sendMessage(chatId, "Будь-ласка, детально опишіть проблему:");
+      bot.sendMessage(chatId, "Будь-ласка, детально опишіть проблему:",
+      {
+        force_reply: true,
+      });
 
       const recipientProblemResponse = await waitForReply(chatId);
       const recipientProblem = recipientProblemResponse.text;
@@ -503,11 +508,8 @@ module.exports = function (io) {
           await trainingRequest(msg);
           break;
         case "🆘 Запит технічної допомоги":
-          await bot.sendChatAction(msg.chat.id, "typing", {
-            reply_markup: { remove_keyboard: true },
-          });
-
-          
+          await closeMenu(msg);
+          await bot.sendChatAction(msg.chat.id, "typing");
           await sendSupportRequestMessage(msg);
           break;
         case "❌ Закрити меню":
