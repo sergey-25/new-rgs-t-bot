@@ -8,7 +8,7 @@ const http = require("http");
 const { Server } = require("socket.io");
 
 const trainingRequestRoutes = require("./routes/trainingRequestRoutes.js");
-
+const supportRequestRoutes = require("./routes/supportRequestRoutes.js");
 dotenv.config();
 
 const token = process.env.TELEGRAM_TOKEN;
@@ -55,6 +55,7 @@ io.on("connection", (socket) => {
 const bot = require("./bot.js")(io);
 
 app.use("/api", trainingRequestRoutes);
+app.use("/api", supportRequestRoutes);
 
 // Handle webhook events
 app.post("/webhook", (req, res) => {

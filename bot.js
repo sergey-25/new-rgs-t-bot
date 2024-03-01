@@ -1,57 +1,58 @@
 const TelegramBot = require("node-telegram-bot-api");
 const axios = require("axios");
 
-
-
-module.exports = function(io) {
+module.exports = function (io) {
   const token = process.env.TELEGRAM_TOKEN;
 
   const bot = new TelegramBot(token, {
     polling: true,
   });
-  
 
   function sendNotification(message) {
     console.log(message, "sendNotification");
-    io.emit('message', { message });
+    io.emit("message", { message });
   }
-  
+  function sendSupportNotification(message) {
+    console.log(message, "sendNotification");
+    io.emit("message", { message });
+  }
+
   const commands = [
     { command: "start", description: "Запуск бота" },
     { command: "menu", description: "Меню" },
   ];
   bot.setMyCommands(commands);
-  
+
   const mainMenuKeyboard = [
-    ["📝 Створити запит на навчання", "Запит технічної допомоги"],
+    ["📝 Запит на навчання", "🆘 Запит технічної допомоги"],
     ["ℹ️ Корисна інформація", "📖 Інструкції"],
     ["☎️ Контакт служби підтримки"],
     ["❌ Закрити меню"],
   ];
-  
+
   const instructionsMenuKeyboard = [
     ["🩺💻 Інструкція для кабінету лікаря"],
     ["🧑🏻‍⚕️💻 Інструкція для кабінету пацієнта до пк"],
     ["🧑🏻‍⚕️📱 Інструкція для пацієнта до мобільного пристрою"],
     ["⬅️ Повернутися до головного меню"],
   ];
-  
+
   const infoMenuKeyboard = [
     ["⚖️ Законодавство"],
     ["▶️ Youtube канал"],
     ["⬅️ Повернутися до головного меню"],
   ];
-  
+
   const generateMenuMarkup = (year, month) => {
     const daysInMonth = new Date(year, month, 0).getDate(); // Get the number of days in the specified month
     const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1); // Create an array of days in the month
-  
+
     // Divide the days into rows of 7 buttons per row
     const rows = [];
     for (let i = 0; i < daysArray.length; i += 7) {
       rows.push(daysArray.slice(i, i + 7));
     }
-  
+
     // Generate markup for each row of buttons
     const markupRows = rows.map((row) => {
       return row.map((day) => {
@@ -63,13 +64,13 @@ module.exports = function(io) {
         };
       });
     });
-  
+
     // Generate buttons for navigation to previous and next months
     const prevMonth = month === 1 ? 12 : month - 1;
     const prevYear = month === 1 ? year - 1 : year;
     const nextMonth = month === 12 ? 1 : month + 1;
     const nextYear = month === 12 ? year + 1 : year;
-  
+
     const prevMonthButton = {
       text: "◀️",
       callback_data: `navigate_month_${prevYear}-${prevMonth
@@ -82,12 +83,12 @@ module.exports = function(io) {
         .toString()
         .padStart(2, "0")}`,
     };
-  
+
     markupRows.push([prevMonthButton, nextMonthButton]);
-  
+
     return markupRows; // Return the array of arrays representing rows of buttons
   };
-  
+
   // Function to wait for user response
   function waitForReply(chatId) {
     return new Promise((resolve) => {
@@ -96,9 +97,9 @@ module.exports = function(io) {
       });
     });
   }
-  
+
   let isFirstMenuCall = true;
-  
+
   async function waitForDateSelection(chatId) {
     // Function to wait for date selection
     return new Promise((resolve) => {
@@ -117,9 +118,9 @@ module.exports = function(io) {
           const month = yearMonthMatch
             ? parseInt(yearMonthMatch[2])
             : new Date().getMonth() + 1;
-  
+
           const menuMarkup = generateMenuMarkup(year, month);
-  
+
           await bot.editMessageText(
             `Оберіть день проведення навчання ${year}-${month
               .toString()
@@ -132,19 +133,19 @@ module.exports = function(io) {
               },
             }
           );
-  
+
           // Re-listen for date selection after navigating to a new month
           waitForDateSelection(chatId).then(resolve);
         }
       });
     });
   }
-  
+
   async function waitForTimeSelection(chatId) {
     // Function to wait for time selection
     return new Promise((resolve) => {
       let resolved = false; // Flag to track if callback has been resolved
-  
+
       const callbackHandler = async (callbackQuery) => {
         if (resolved) return; // Ignore callback if already resolved
         const callbackData = callbackQuery.data;
@@ -165,11 +166,11 @@ module.exports = function(io) {
           });
         }
       };
-  
+
       bot.on("callback_query", callbackHandler);
     });
   }
-  
+
   async function sendStartMessage(msg) {
     if (msg.text && msg.text.length > 6) {
       const refID = msg.text.slice(7);
@@ -178,13 +179,13 @@ module.exports = function(io) {
         `Ви зашли по посиланню користувача з ID ${refID}`
       );
     }
-  
+
     const startMessage = `Цей бот створений для підтримки користувачів RGS. Меню доступне за командою /menu`;
-  
+
     // Check if the bot has the necessary permissions to send messages
     const botInfo = await bot.getMe();
     console.log(botInfo); // Check if the bot has permission to send messages
-  
+
     await bot.sendMessage(msg.chat.id, startMessage, {
       reply_markup: {
         keyboard: [],
@@ -194,7 +195,7 @@ module.exports = function(io) {
       },
     });
   }
-  
+
   async function sendMainMenuMessage(msg) {
     await bot.sendMessage(msg.chat.id, `Меню бота`, {
       force_reply: true,
@@ -206,42 +207,45 @@ module.exports = function(io) {
       reply_markup: { remove_keyboard: true },
     });
   }
-  
+
   async function trainingRequest(msg) {
     const chatId = msg.chat.id;
-  
+
     if (isFirstMenuCall) {
       bot.sendMessage(
         chatId,
         "Вітаємо, підкажіть будь-ласка чи проводили для вашого закладу навчання?:"
       );
-  
+
       const wasThereTrainingResponse = await waitForReply(chatId);
       const wasThereTraining = wasThereTrainingResponse.text;
-  
+
       bot.sendMessage(
         chatId,
         "Будь-ласка, вкажіть назву закладу або ЄДРПОУ закладу:"
       );
-  
+
       const hospitalResponse = await waitForReply(chatId);
       const hospitalName = hospitalResponse.text;
-  
-      bot.sendMessage(chatId, "Будь-ласка, вкажіть як до Вас звертатися (ПІБ):");
-  
+
+      bot.sendMessage(
+        chatId,
+        "Будь-ласка, вкажіть як до Вас звертатися (ПІБ):"
+      );
+
       const recipientResponse = await waitForReply(chatId);
       const recipientName = recipientResponse.text;
-  
+
       bot.sendMessage(
         chatId,
         "Будь-ласка, вкажіть ваш контактий номер телефону:"
       );
-  
+
       const recipientPhoneResponse = await waitForReply(chatId);
       const recipientPhone = recipientPhoneResponse.text;
-  
+
       // isFirstMenuCall = false;
-  
+
       const today = new Date();
       const currentYear = today.getFullYear();
       const currentMonth = today.getMonth() + 1;
@@ -252,7 +256,7 @@ module.exports = function(io) {
           inline_keyboard: menuMarkup,
         },
       });
-  
+
       const dateResponse = await waitForDateSelection(chatId);
       const timeOptions = [
         ["10:00 - 11:00", "11:00 - 12:00"],
@@ -260,7 +264,7 @@ module.exports = function(io) {
         ["14:00 - 15:00", "15:00 - 16:00"],
         ["16:00 - 17:00", "Ваш варіант"],
       ];
-  
+
       const timeOptionsMarkup = timeOptions.map((row) => {
         //   return row.map((timeOption) => {
         //     return {
@@ -282,7 +286,7 @@ module.exports = function(io) {
           }
         });
       });
-  
+
       await bot.sendMessage(
         chatId,
         `Та обіріть бажаний час на - ${dateResponse.text}:`,
@@ -292,14 +296,15 @@ module.exports = function(io) {
           },
         }
       );
-  
+
       const timeResponse = await waitForTimeSelection(chatId);
-  
+
       bot.sendMessage(
         chatId,
         "Вкажіть перелік учасників (ПІБ, Електронну адресу):"
       );
       const presentResponse = await waitForReply(chatId);
+
       const trainingRequest = {
         was_there_training: wasThereTraining,
         hospital_name: hospitalName,
@@ -311,15 +316,15 @@ module.exports = function(io) {
       };
       console.log(trainingRequest);
       // Insert the document into MongoDB
-      bot.sendMessage(chatId, "Дякуємо за запит!");
+
       await insertDocument(msg, trainingRequest);
-  
+
       // Here you can continue with other questions if needed
     } else {
       // Handling for subsequent menu calls
     }
   }
-  
+
   async function insertDocument(msg, document) {
     await bot.sendChatAction(msg.chat.id, "typing");
     try {
@@ -334,19 +339,12 @@ module.exports = function(io) {
       );
       await sendNotification(response.data);
       console.log("Response from Express.js:", response.data);
-      bot.sendMessage(
-        msg.chat.id,
-        "Thank you! Your training request has been submitted."
-      );
+      bot.sendMessage(msg.chat.id, "Дякуємо за запит!");
     } catch (error) {
       console.error("Error sending data to Express.js:", error);
-      bot.sendMessage(
-        msg.chat.id,
-        "Sorry, there was an error processing your request. Please try again later."
-      );
     }
   }
-  
+
   async function sendSupportContact(msg) {
     const contactInfo = `
       
@@ -357,10 +355,10 @@ module.exports = function(io) {
       
           📧 <b>Email:</b> rgs.info.ua@ukr.net
           `;
-  
+
     await bot.sendMessage(msg.chat.id, contactInfo, { parse_mode: "HTML" });
   }
-  
+
   async function sendInstructionsMenu(msg) {
     await bot.sendMessage(
       msg.chat.id,
@@ -373,7 +371,7 @@ module.exports = function(io) {
       }
     );
   }
-  
+
   async function sendInfoMenu(msg) {
     await bot.sendMessage(
       msg.chat.id,
@@ -383,12 +381,12 @@ module.exports = function(io) {
       }
     );
   }
-  
+
   async function sendDocument(msg, path) {
     await bot.sendMessage(msg.chat.id, `Документ завантажується...`);
     await bot.sendDocument(msg.chat.id, path);
   }
-  
+
   async function sendUsefulInfoMessage(msg) {
     const infoMessage = `
         <b>Тут Ви зможете знайти корисну інформацію:</b>
@@ -403,7 +401,7 @@ module.exports = function(io) {
       
         5. <a href = "https://zakon.rada.gov.ua/laws/show/3301-20#Text">ЗАКОН УКРАЇНИ Про внесення змін до деяких законодавчих актів України щодо функціонування телемедицини</a>
         `;
-  
+
     await bot.sendMessage(msg.chat.id, infoMessage, { parse_mode: "HTML" });
   }
   async function sendMessages(msg, text) {
@@ -413,7 +411,82 @@ module.exports = function(io) {
           <a href="https://www.youtube.com/@serhii-qh4lw">Youtube канал RGS UKRAINE</a>`;
     await bot.sendMessage(msg.chat.id, linkToYoutube, { parse_mode: "HTML" });
   }
-  
+
+  async function sendSupportRequestMessage(msg) {
+    const chatId = msg.chat.id;
+    if (isFirstMenuCall) {
+      bot.sendMessage(
+        chatId,
+        "Будь-ласка, вкажіть назву закладу або ЄДРПОУ закладу:"
+      );
+
+      const hospitalResponse = await waitForReply(chatId);
+      const hospitalName = hospitalResponse.text;
+
+      bot.sendMessage(
+        chatId,
+        "Будь-ласка, вкажіть як до Вас звертатися (ПІБ):"
+      );
+
+      const recipientResponse = await waitForReply(chatId);
+      const recipientName = recipientResponse.text;
+
+      bot.sendMessage(
+        chatId,
+        "Будь-ласка, вкажіть ваш контактий номер телефону:"
+      );
+
+      const recipientPhoneResponse = await waitForReply(chatId);
+      const recipientPhone = recipientPhoneResponse.text;
+
+      bot.sendMessage(
+        chatId,
+        "Будь-ласка, вкажіть адресу електронної пошти телефону:"
+      );
+
+      const recipientEmailResponse = await waitForReply(chatId);
+      const recipientEmail = recipientEmailResponse.text;
+
+      bot.sendMessage(chatId, "Будь-ласка, детально опишіть проблему:");
+
+      const recipientProblemResponse = await waitForReply(chatId);
+      const recipientProblem = recipientProblemResponse.text;
+
+      const supportRequest = {
+        hospital_name: hospitalName,
+        recipient_name: recipientName,
+        recipient_phone: recipientPhone,
+        recipient_email: recipientEmail,
+        problem: recipientProblem,
+      };
+      console.log(supportRequest);
+      await insertSupportDocument(msg, supportRequest);
+    }
+  }
+
+  async function insertSupportDocument(msg, document) {
+    await bot.sendChatAction(msg.chat.id, "typing");
+    try {
+      const headers = {
+        "Content-Type": "application/json", // Set the content type to JSON
+        // Add any other headers as needed
+      };
+      const response = await axios.post(
+        "https://new-rgs-bot-e6e357c7268f.herokuapp.com/api/support-request",
+        document,
+        { headers }
+      );
+      await sendSupportNotification(response.data);
+      console.log("Response from Express.js:", response.data);
+      bot.sendMessage(
+        msg.chat.id,
+        "Дякуємо за запит, ми зв'яжемося з Вами ближчим часом!"
+      );
+    } catch (error) {
+      console.error("Error sending data to Express.js:", error);
+    }
+  }
+
   bot.on("text", async (msg) => {
     try {
       switch (msg.text) {
@@ -424,10 +497,13 @@ module.exports = function(io) {
         case "/menu":
           await sendMainMenuMessage(msg);
           break;
-        case "📝 Створити запит на навчання":
+        case "📝 Запит на навчання":
           await bot.sendChatAction(msg.chat.id, "typing");
           await closeMenu(msg);
           await trainingRequest(msg);
+          break;
+        case "🆘 Запит технічної допомоги":
+          await sendSupportRequestMessage(msg);
           break;
         case "❌ Закрити меню":
           await closeMenu(msg);
@@ -470,13 +546,6 @@ module.exports = function(io) {
       console.log(error);
     }
   });
-  // const PORT = process.env.SOSCKET_PORT || 8090;
-  
-  // server.listen(PORT, function () {
-  //   console.log(`WebSocket server is listening on port ${PORT}`);
-  // });
 
   return bot;
-}
-
-// module.exports = bot;
+};
