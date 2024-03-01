@@ -14,7 +14,7 @@ module.exports = function (io) {
   }
   function sendSupportNotification(message) {
     console.log(message, "sendNotification");
-    io.emit("message", { message });
+    io.emit("support", { message });
   }
 
   const commands = [
