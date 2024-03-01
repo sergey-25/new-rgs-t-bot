@@ -407,7 +407,10 @@ module.exports = function (io) {
     if (isFirstMenuCall) {
       bot.sendMessage(
         chatId,
-        "Будь-ласка, вкажіть назву закладу або ЄДРПОУ закладу:"
+        "Будь-ласка, вкажіть назву закладу або ЄДРПОУ закладу:",
+        {
+          force_reply: true,
+        }
       );
 
       const hospitalResponse = await waitForReply(chatId);
@@ -415,7 +418,10 @@ module.exports = function (io) {
 
       bot.sendMessage(
         chatId,
-        "Будь-ласка, вкажіть як до Вас звертатися (ПІБ):"
+        "Будь-ласка, вкажіть як до Вас звертатися (ПІБ):",
+        {
+          force_reply: true,
+        }
       );
 
       const recipientResponse = await waitForReply(chatId);
@@ -423,7 +429,10 @@ module.exports = function (io) {
 
       bot.sendMessage(
         chatId,
-        "Будь-ласка, вкажіть ваш контактий номер телефону:"
+        "Будь-ласка, вкажіть ваш контактий номер телефону:",
+        {
+          force_reply: true,
+        }
       );
 
       const recipientPhoneResponse = await waitForReply(chatId);
@@ -431,13 +440,19 @@ module.exports = function (io) {
 
       bot.sendMessage(
         chatId,
-        "Будь-ласка, вкажіть адресу електронної пошти телефону:"
+        "Будь-ласка, вкажіть адресу електронної пошти телефону:",
+        {
+          force_reply: true,
+        }
       );
 
       const recipientEmailResponse = await waitForReply(chatId);
       const recipientEmail = recipientEmailResponse.text;
 
-      bot.sendMessage(chatId, "Будь-ласка, детально опишіть проблему:");
+      bot.sendMessage(chatId, "Будь-ласка, детально опишіть проблему:",
+      {
+        force_reply: true,
+      });
 
       const recipientProblemResponse = await waitForReply(chatId);
       const recipientProblem = recipientProblemResponse.text;
