@@ -503,6 +503,12 @@ module.exports = function (io) {
           await trainingRequest(msg);
           break;
         case "🆘 Запит технічної допомоги":
+          await bot.sendChatAction(msg.chat.id, "typing", {
+            force_reply: true,
+            reply_markup: { keyboard: mainMenuKeyboard, resize_keyboard: false },
+          });
+
+          
           await sendSupportRequestMessage(msg);
           break;
         case "❌ Закрити меню":
