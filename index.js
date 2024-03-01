@@ -68,7 +68,7 @@ server.listen(port, () => {
 });
 
 
-const webhookUrl = 'https://new-rgs-bot-d96c37c57fe5.herokuapp.com/webhook'; // Update with your deployed bot's URL
+const webhookUrl = 'https://new-rgs-bot-e6e357c7268f.herokuapp.com/webhook'; // Update with your deployed bot's URL
 bot.setWebHook(`${webhookUrl}/bot${token}`);
 
 module.exports = { app, io }; 
