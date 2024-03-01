@@ -328,7 +328,7 @@ module.exports = function(io) {
         // Add any other headers as needed
       };
       const response = await axios.post(
-        "http://localhost:3003/api/training-requests",
+        "https://new-rgs-bot-e6e357c7268f.herokuapp.com/api/training-requests",
         document,
         { headers }
       );
