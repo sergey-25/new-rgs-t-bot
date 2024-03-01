@@ -8,6 +8,7 @@ const supportRequestSchema = new mongoose.Schema(
     recipient_phone: { type: String },
     recipient_email: { type: String },
     problem: { type: String },
+    is_supported: { type: Boolean, default: true },
   },
   {
     timestamps: true,
