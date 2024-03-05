@@ -329,7 +329,7 @@ module.exports = function (io) {
       );
       await sendNotification(response.data);
       console.log("Response from Express.js:", response.data);
-      bot.sendMessage(msg.chat.id, "Дякуємо за запит! Запрошеня на навчання буде надіслано всім уасникам на електронну пошту.");
+      bot.sendMessage(msg.chat.id, "Дякуємо за запит! Запрошеня на навчання буде надіслано всім учасникам на електронну пошту.");
     } catch (error) {
       console.error("Error sending data to Express.js:", error);
     }
